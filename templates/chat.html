@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Recommendation Chatbot</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: linear-gradient(90deg, #C7C5F4, #776BCC);	
+            min-height: 100vh; /* Ensures full height */
+            position: relative; /* For logout positioning */
+        }
+        h2 {
+            text-align: center;
+            color: #fff;
+            font-size: 2.2em;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+        h3 {
+            color: #fff;
+            font-size: 1.5em;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        input[type="text"] {
+            padding: 12px 15px;
+            width: 60%;
+            max-width: 400px;
+            border: none;
+            border-radius: 25px 0 0 25px;
+            font-size: 1em;
+            outline: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="submit"] {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 0 25px 25px 0;
+            background-color: #5A54A8;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #776BCC;
+        }
+        .video-recommendation {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+        .video-recommendation:hover {
+            transform: translateY(-5px);
+        }
+        .video-title {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+        .video-title a {
+            text-decoration: none;
+            color: #5A54A8;
+            transition: color 0.3s ease;
+        }
+        .video-title a:hover {
+            color: #776BCC;
+        }
+        .video-description {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-top: 5px;
+        }
+        .logout {
+    position: fixed; /* Use fixed positioning to keep it in place */
+    top: 20px;     /* Distance from the top */
+    right: 20px;    /* Distance from the right */
+    color: #fff;
+    text-decoration: none;
+    font-size: 1em;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    transition: background 0.3s ease;
+    z-index: 10;    /* Ensure it's above other elements */
+}
+        .logout:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <h2>Video Recommendation Chatbot</h2>
+    <form method="post">
+        <input type="text" name="topic" placeholder="Enter topic" required>
+        <input type="submit" value="Search">
+    </form>
+    
+    {% if videos %}
+        <h3>Recommended Videos:</h3>
+        {% for video in videos %}
+            <div class="video-recommendation">
+                <div class="video-title">
+                    <a href="{{ video.url }}" target="_blank">{{ video.title }}</a>
+                </div>
+                {% if video.description %}
+                    <div class="video-description">
+                        {{ video.description }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <a href="/logout" class="logout">Logout</a>
+</body>
+</html>

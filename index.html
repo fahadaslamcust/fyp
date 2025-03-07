@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video App</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: auto; text-align: center; }
+        .chatbox { width: 100%; height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
+        input, button { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        <form action="/login" method="post">
+            <select name="user_type">
+                <option value="uploader">Uploader</option>
+                <option value="viewer">Viewer</option>
+            </select>
+            <button type="submit">Login</button>
+        </form>
+
+        {% if session.user_type %}
+            <h2>Dashboard ({{ session.user_type }})</h2>
+            <a href="/logout">Logout</a>
+
+            {% if session.user_type == "uploader" %}
+                <h3>Upload Video</h3>
+                <form action="/upload" method="post" enctype="multipart/form-data">
+                    <input type="text" name="title" placeholder="Video Title" required>
+                    <input type="file" name="video" required>
+                    <button type="submit">Upload</button>
+                </form>
+            {% endif %}
+
+            {% if session.user_type == "viewer" %}
+                <h3>Chatbot</h3>
+                <div class="chatbox" id="chatbox"></div>
+                <input type="text" id="userInput" placeholder="Ask for a video...">
+                <button onclick="sendMessage()">Send</button>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <script>
+        function sendMessage() {
+            let userInput = $("#userInput").val();
+            if (!userInput) return;
+
+            $("#chatbox").append("<p><b>You:</b> " + userInput + "</p>");
+
+            $.ajax({
+                url: "/chatbot",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ query: userInput }),
+                success: function(response) {
+                    $("#chatbox").append("<p><b>Bot:</b> " + response.response + "</p>");
+                }
+            });
+
+            $("#userInput").val("");
+        }
+    </script>
+</body>
+</html>

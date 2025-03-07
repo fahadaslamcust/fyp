@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Videos & Playlists</title>
+    <style>
+        /* Reuse styles from upload.html */
+        body { 
+            background: linear-gradient(90deg, #C7C5F4, #776BCC);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #fff;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            padding: 30px 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 500px;
+            text-align: center;
+        }
+        h2, h3 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+        li {
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+        button, input[type="submit"] {
+            background-color: #6358B9;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover, input[type="submit"]:hover {
+            background-color: #5149A6;
+            transform: translateY(-2px);
+        }
+        select, input[type="text"] {
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            margin: 5px;
+        }
+        .logout {
+            display: inline-block;
+            margin-top: 25px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.2);
+            transition: background 0.3s ease;
+            border-radius: 20px;
+            padding: 8px 12px;
+        }
+        .logout:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Manage Videos & Playlists</h2>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div style="color: #fff; margin-bottom: 20px;">
+                    {% for message in messages %}
+                        {{ message }}<br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <h3>Videos</h3>
+        <ul>
+            {% for video in videos %}
+                <li>
+                    {{ video }}
+                    <form method="post" style="display:inline;">
+                        <input type="hidden" name="action" value="delete_video">
+                        <input type="hidden" name="video" value="{{ video }}">
+                        <button type="submit">Delete</button>
+                    </form>
+                    <form method="post" style="display:inline;">
+                        <input type="hidden" name="action" value="add_to_playlist">
+                        <input type="hidden" name="video" value="{{ video }}">
+                        <select name="playlist">
+                            {% for playlist in playlists.keys() %}
+                                <option value="{{ playlist }}">{{ playlist }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Add to Playlist</button>
+                    </form>
+                </li>
+            {% else %}
+                <li>No videos uploaded yet</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Playlists</h3>
+        <form method="post">
+            <input type="hidden" name="action" value="create_playlist">
+            <input type="text" name="playlist_name" placeholder="New Playlist Name" required>
+            <input type="submit" value="Create">
+        </form>
+        <ul>
+            {% for name, videos in playlists.items() %}
+                    <li>
+                        {{ name }}:
+                        <form method="post" style="display:inline;margin-left: 370px;">
+                        <input type="hidden" name="action" value="delete_playlist">
+                        <input type="hidden" name="playlist" value="{{ name }}">
+                        <button type="submit">Delete</button><br><br>
+                        </form>
+                        {% if videos %}
+                            <ul style="padding-left: 20px;">
+                                {% for video in videos %}
+                                    <li style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+                                        <span>{{ video }}</span>
+                                        <form method="post" style="display:inline; margin-left: 10px;">
+                                            <input type="hidden" name="action" value="remove_from_playlist">
+                                            <input type="hidden" name="playlist" value="{{ name }}">
+                                            <input type="hidden" name="video" value="{{ video }}">
+                                            <button type="submit" style="margin: 0;">Remove</button>
+                                        </form>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            No videos in this playlist
+                        {% endif %}
+                    </li>
+                {% else %}
+                    <li>No playlists created yet</li>
+                {% endfor %}
+        </ul>
+        <a href="/upload" style="color: white; margin-right: 20px;">Upload More Videos</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</body>
+</html>
