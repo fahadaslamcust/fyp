@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Player</title>
+    <style>
+        .center { text-align: center; margin-top: 40px; }
+        .like-section { margin-top: 20px; }
+        .views-section { margin-top: 10px; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="center">
+        <video src="{{ video_url }}" controls style="max-width: 90%;"></video>
+        <div class="views-section" id="views-count">Views: ...</div>
+        <div class="like-section">
+            <button id="like-btn">👍</button>
+            <span id="like-count">Likes: ...</span>
+        </div>
+    </div>
+    <script>
+        // Get just the filename for local videos
+        const videoUrl = "{{ video_url }}";
+        let videoKey = videoUrl;
+        if (videoUrl.startsWith("/static/uploads/")) {
+            videoKey = videoUrl.split('/').pop();
+        }
+
+        // Increment view count on page load
+        fetch('/increment_view', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({video_url: videoUrl})
+        }).then(() => {
+            fetch('/get_views?video_url=' + encodeURIComponent(videoUrl))
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('views-count').innerText = "Views: " + data.views;
+            });
+        });
+
+        // Like button logic
+        function updateLikeCount() {
+            fetch('/get_likes?video_url=' + encodeURIComponent(videoKey))
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('like-count').innerText = "Likes: " + data.likes;
+            });
+        }
+        updateLikeCount();
+
+        document.getElementById('like-btn').onclick = function() {
+            fetch('/add_like', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ video_url: videoUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateLikeCount();
+                } else if (data.already_liked) {
+                    alert("You have already liked this video.");
+                }
+            });
+        };
+    </script>
+</body>
+</html>

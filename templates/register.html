@@ -13,7 +13,7 @@
 }
 
 body {
-	background: linear-gradient(90deg, #C7C5F4, #776BCC);		
+	background: linear-gradient(90deg, #8ec5fc 100%);		
 }
 
 .container {
@@ -24,7 +24,7 @@ body {
 }
 
 .screen {		
-	background: linear-gradient(90deg, #5D54A4, #7C78B8);		
+	background: linear-gradient(90deg,rgb(192, 20, 218),rgb(120, 184, 179));		
 	position: relative;	
 	height: 600px;
 	width: 360px;	
@@ -103,14 +103,15 @@ body {
 .login__icon {
 	position: absolute;
 	top: 30px;
-	color: #7875B5;
+	color:rgb(243, 240, 70);
 }
 
 .login__input {
 	border: none;
 	border-bottom: 2px solid #D1D1D4;
-	background: none;
+	background: #fff;
 	padding: 10px;
+	color: #4C489D;
 	padding-left: 24px;
 	font-weight: 700;
 	width: 75%;
@@ -154,23 +155,55 @@ body {
 	margin-left: auto;
 	color: #7875B5;
 }
+.m{
+	color: red;
+	text-align: center;
+	margin: 10px auto;
+}
+.back-btn {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    color: #222;
+    font-size: 18px;
+    text-decoration: none;
+    font-weight: bold;
+    z-index: 2;
+    transition: color 0.2s;
+}
+.back-btn i {
+    margin-right: 8px;
+    font-size: 20px;
+}
+.back-btn:hover {
+    color: #6A679E;
+}
     </style>
 </head>
 <body>
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
+    {% if message %}
+        <p class="m">{{ message }}</p>
     {% endif %}
     <div class="container">
+		<a href="/" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
         <div class="screen">
             <div class="screen__content">
-                <form class="login" method="post" action="/register">
+                <form class="login" method="post" action="/register"  onsubmit="return validatePassword()">
+					<h1 style="text-align: center; color: black;">Registration</h1><br>
                     <div class="login__field">
                         <i class="login__icon fas fa-user"></i>
-                        <input type="text"  name="username" class="login__input" placeholder="User name" required>
+                        <input type="text"  name="username" id="username" class="login__input" placeholder="User name" required>
                     </div>
                     <div class="login__field">
                         <i class="login__icon fas fa-lock"></i>
-                        <input type="password" name="password" class="login__input" placeholder="Password" required>
+                        <input type="password" name="password" id="password" class="login__input" placeholder="Password" required>
+						<small id="passwordError" style="color: red; display: none;"></small> <!-- Error message for password validation -->
                     </div>
                     <div>
                         <select name="role" required>
@@ -178,8 +211,8 @@ body {
                             <option value="viewer">Viewer</option>
                         </select>
                     </div>
-                    <button class="button login__submit">
-						<span class="button__text" value="Register">Register</span>
+                    <button class="button login__submit" type="submit">
+						<span class="button__text">Register</span>
                         <i class="button__icon fas fa-chevron-right"></i>
                     </button>		
                 </form>
@@ -188,9 +221,32 @@ body {
                 <span class="screen__background__shape screen__background__shape4"></span>
                 <span class="screen__background__shape screen__background__shape3"></span>		
                 <span class="screen__background__shape screen__background__shape2"></span>
-                <span class="screen__background__shape screen__background__shape1"></span>
             </div>		
         </div>
     </div>   
+	<script>
+		function validatePassword() {
+			let password = document.getElementById("password").value;
+			let username = document.getElementById("username").value;
+			let error = document.getElementById("passwordError");
+			error.style.display = "none"; // Hide the error message initially
+			if (password.length < 6 || password.length > 13) {
+				error.innerText = "Password must be between 6 and 13 characters.";
+				error.style.display = "block";
+				return false;
+			}
+			if (/\s/.test(password)) {
+				error.innerText = "Password must not contain spaces.";
+				error.style.display = "block";
+				return false;
+			}
+			if (password.toLowerCase().includes(username.toLowerCase())) {
+				error.innerText = "Password cannot contain the username.";
+				error.style.display = "block";
+				return false;
+			}
+			return true;
+		}
+	</script>
 </body>
 </html>

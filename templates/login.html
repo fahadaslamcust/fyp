@@ -13,9 +13,8 @@
 }
 
 body {
-	background: linear-gradient(90deg, #C7C5F4, #776BCC);		
+	background: linear-gradient(90deg, #8ec5fc 100%);		
 }
-
 .container {
 	display: flex;
 	align-items: center;
@@ -24,7 +23,7 @@ body {
 }
 
 .screen {		
-	background: linear-gradient(90deg, #5D54A4, #7C78B8);		
+	background: linear-gradient(90deg,rgb(192, 20, 218),rgb(120, 184, 179));		
 	position: relative;	
 	height: 600px;
 	width: 360px;	
@@ -57,9 +56,10 @@ body {
 	height: 520px;
 	width: 520px;
 	background: #FFF;	
-	top: -50px;
+	top: 320px;
 	right: 120px;	
 	border-radius: 0 72px 0 0;
+	transform: rotate(120deg);
 }
 
 .screen__background__shape2 {
@@ -103,13 +103,14 @@ body {
 .login__icon {
 	position: absolute;
 	top: 30px;
-	color: #7875B5;
+	color:rgb(243, 240, 70);
 }
 
 .login__input {
 	border: none;
 	border-bottom: 2px solid #D1D1D4;
-	background: none;
+	background: #fff;
+	color: #4C489D;
 	padding: 10px;
 	padding-left: 24px;
 	font-weight: 700;
@@ -154,16 +155,29 @@ body {
 	margin-left: auto;
 	color: #7875B5;
 }
+.login,
+.login__field,
+.login__input,
+a {
+    color:rgb(15, 15, 15);
+}
     </style>
 </head>
 <body>
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
     <div class="container">
         <div class="screen">
             <div class="screen__content">
+				{% with messages = get_flashed_messages() %}
+				 {% if messages %}
+					<div style="color: red; text-align: center; margin-bottom: 5px;">
+						{% for message in messages %}
+							<p>{{ message }}</p>
+						{% endfor %}
+					</div>
+				 {% endif %}
+    			{% endwith %}
                 <form class="login" method="post" action="/login">
+					<h1 style="text-align: center; color: black;">Sign in</h1><br>
                     <div class="login__field">
                         <i class="login__icon fas fa-user"></i>
                         <input type="text"  name="username" class="login__input" placeholder="User name" required>
@@ -173,17 +187,16 @@ body {
                         <input type="password" name="password" class="login__input" placeholder="Password" required>
                     </div>
                     <button class="button login__submit">
-						<span class="button__text" value="Login">Log In</span>
+						<span class="button__text" value="Login" style="color:black;">Log In</span>
                         <i class="button__icon fas fa-chevron-right"></i>
                     </button>	
-					<br><p><a href="/register">Sign Up</a></p>			
+					<br><p style="padding-left:10px;"><a href="/register" style="font-size: 18px; color:black">Sign Up</a></p>			
                 </form>
             </div>
             <div class="screen__background">
                 <span class="screen__background__shape screen__background__shape4"></span>
                 <span class="screen__background__shape screen__background__shape3"></span>		
                 <span class="screen__background__shape screen__background__shape2"></span>
-                <span class="screen__background__shape screen__background__shape1"></span>
             </div>		
         </div>
     </div>   
