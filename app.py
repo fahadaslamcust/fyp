@@ -550,6 +550,37 @@ def search():
         return jsonify({"videos": videos, "info": "No videos found with feedback. Showing basic search results."})
     response = {"videos": videos}
     return jsonify(response)
+def ratioSort(video):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    video_url = video['url'] # Get the full URL
+    # Extract video_key for database lookup (assuming it's the filename for local videos)
+    if video_url.startswith('/static/uploads/'):
+        video_key = video_url.split('/')[-1]
+    else:
+        # This function is intended for local videos, but handle other cases defensively
+        conn.close()
+        video['comment_view_ratio'] = 0 # Or some default low value
+        return
+
+    # Get comment count
+    cursor.execute("SELECT COUNT(*) as comment_count FROM comments WHERE video_url = ?", (video_key,))
+    comment_count = cursor.fetchone()['comment_count']
+    video['comment_count'] = comment_count
+
+    # Get view count
+    cursor.execute("SELECT view_count FROM views WHERE video_url = ?", (video_key,))
+    row = cursor.fetchone()
+    view_count = row['view_count'] if row else 0
+    video['views'] = view_count
+
+    conn.close()
+    # Calculate comment-to-view ratio Add a small epsilon to view_count to avoid division by zero if views are 0 Or handle the zero case explicitly
+    if view_count > 0:
+        video['comment_view_ratio'] = comment_count / view_count
+    else:
+        # If no views, the ratio is effectively infinite or undefined. Assign a value based on comment count (more comments with 0 views is better)
+        video['comment_view_ratio'] = comment_count # Assign comment count directly if views are 0
 @app.route('/add_comment', methods=['POST'])
 def add_comment():
     if 'username' not in session:
@@ -627,75 +658,38 @@ def get_video_sentiment(video_url):
     scores = [analyze_sentiment(row['comment']) for row in comments]
     avg_sentiment = sum(scores) / len(scores)
     return avg_sentiment
+
+# Modify search_videos_with_sentiment
 def search_videos_with_sentiment(topic, class_level=None, teacher_name=None):
     videos = search_videos(topic, class_level, teacher_name)
     if not videos:
         return []
-    
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    ranked_videos = []
+
+    youtube_videos = []
+    local_videos = []
 
     for video in videos:
-        sentiments = []
-        likes_list = []
-        views_list = []
-        
-        if video['url'].startswith('/static/uploads/'):
-            # Handle local videos
-            video_key = video['url'].split('/')[-1]
-            
-            # Get sentiment
-            sentiment = get_video_sentiment(video['url'])
-            if sentiment is None:
-                sentiment = 0
-            video['sentiment'] = sentiment
-            sentiments.append(sentiment)
-            
-            # Get likes
-            cursor.execute("SELECT COUNT(*) as like_count FROM likes WHERE video_url = ?", (video_key,))
-            like_count = cursor.fetchone()['like_count']
-            video['likes'] = like_count
-            likes_list.append(like_count)
-            
-            # Get views
-            cursor.execute("SELECT view_count FROM views WHERE video_url = ?", (video_key,))
-            row = cursor.fetchone()
-            view_count = row['view_count'] if row else 0
-            video['views'] = view_count
-            views_list.append(view_count)
-            
-            # Calculate normalized score
-            if max(sentiments) != min(sentiments):
-                sentiment_norm = (sentiment - min(sentiments)) / (max(sentiments) - min(sentiments))
-            else:
-                sentiment_norm = 0
-                
-            if max(likes_list) != min(likes_list):
-                likes_norm = (like_count - min(likes_list)) / (max(likes_list) - min(likes_list))
-            else:
-                likes_norm = 0
-                
-            if max(views_list) != min(views_list):
-                views_norm = (view_count - min(views_list)) / (max(views_list) - min(views_list))
-            else:
-                views_norm = 0
-                
-            video['score'] = 0.5 * sentiment_norm + 0.3 * likes_norm + 0.2 * views_norm
-            
-        elif video['url'].startswith('https://www.youtube.com/watch?v='):
-            # Handle YouTube videos
-            avg_sentiment = get_video_sentiment(video['url'])
-            video['avg_sentiment'] = avg_sentiment if avg_sentiment is not None else 0
-            
-        ranked_videos.append(video)
-    
-    # Sort videos based on score or sentiment
-    if ranked_videos and 'score' in ranked_videos[0]:
-        ranked_videos.sort(key=lambda x: x['score'], reverse=True)
-    else:
-        ranked_videos.sort(key=lambda x: x['avg_sentiment'], reverse=True)
-    conn.close()
+        if video['url'].startswith('https://www.youtube.com/watch?v='):
+            youtube_videos.append(video)
+        elif video['url'].startswith('/static/uploads/'):
+            local_videos.append(video)
+        # Other video types are ignored
+
+    for video in youtube_videos:
+        avg_sentiment = get_video_sentiment(video['url'])
+        video['avg_sentiment'] = avg_sentiment if avg_sentiment is not None else 0
+    # Sort YouTube videos by sentiment (descending)
+    youtube_videos.sort(key=lambda x: x.get('avg_sentiment', -2), reverse=True)
+    # Process local videos and calculate comment-to-view ratio
+    for video in local_videos:
+        ratioSort(video) # Adds 'comment_count', 'views', 'comment_view_ratio'
+    # Sort local videos by comment-to-view ratio (descending)
+    local_videos.sort(key=lambda x: x.get('comment_view_ratio', 0), reverse=True) # Use .get with a default for safety
+
+    # Combine sorted YouTube videos and sorted local videos
+    # YouTube videos come first, then local videos, both sorted within their groups
+    ranked_videos = youtube_videos + local_videos
+
     return ranked_videos
 @app.route('/video/<filename>')
 def video_landing(filename):
@@ -707,4 +701,5 @@ def logout():
     session.pop('role', None)
     return redirect(url_for('index'))
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.debug = True  
+    app.run()

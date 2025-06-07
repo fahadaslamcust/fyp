@@ -1,8 +1,7 @@
 photosynthesis.mp4:drsaif:9
 Anthropology.mp4:hashir:3
-Entity Relationship Model.mp4:drsaif:9
-Diffusion.mp4:drsaif:9
 Ethical relativism.mp4:hashir:3
 Physical Chemistry.mp4:hashir:5
-devolution plan.mp4:drsaif:10
 OSI Model.mp4:drsaif:10
+business process model.mp4:drsaif:9
+Entity Relationship Model.mp4:drsaif:9
